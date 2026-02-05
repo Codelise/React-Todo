@@ -1,97 +1,116 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Todo() {
-  const [taskArray, setTaskArray] = useState([
-    {
-      task_id: 1,
-      task_name: "Review design system components",
-      task_time: "Today, 4:00 PM",
-      task_completed: false,
-    },
-    {
-      task_id: 2,
-      task_name: "Play video games",
-      task_time: "Tomorrow, 9:00 PM",
-      task_completed: false,
-    },
-    {
-      task_id: 3,
-      task_name: "Code",
-      task_time: "Today, 3:00 PM",
-      task_completed: true,
-    },
-  ]);
+  // gets saved task from localStorage, if empty shows empty array (blank)
+  const [taskArray, setTaskArray] = useState(() => {
+    const loadFromLocalStorage = localStorage.getItem("task");
+    if (!loadFromLocalStorage) {
+      return [];
+    } else {
+      return JSON.parse(loadFromLocalStorage);
+    }
+  });
 
-  function handleShowAlert() {
-    alert("Ugghhh mmmm!");
+  // this is for the input task only
+  const [newTask, setNewTask] = useState("");
+
+  // saves task to localStorage
+  useEffect(() => {
+    localStorage.setItem("task", JSON.stringify(taskArray));
+  }, [taskArray]);
+
+  function handleAddTask() {
+    const taskObject = {
+      task_id: "-" + Math.random().toString(36).substring(2, 9),
+      task_name: newTask,
+      task_time: Date.now().toLocaleString(),
+      task_completed: false,
+    };
+    setTaskArray([...taskArray, taskObject]); // creates a new object that includes the input value
+    console.log([...taskArray, taskObject]);
+    setNewTask(""); // clears the input field
   }
+
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-gradient-mesh dark group/design-root overflow-hidden justify-center items-center p-4">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-screen p-4 overflow-hidden bg-gradient-mesh dark group/design-root">
       {/* Decorative blurred circles */}
       <div className="absolute top-10 left-12.5 w-64 h-64 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
       <div className="absolute top-0 right-12.5 w-64 h-64 bg-purple-500/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
-      <div className="absolute -bottom-32 left-20 w-80 h-80 bg-blue-600/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+      <div className="absolute rounded-full -bottom-32 left-20 w-80 h-80 bg-blue-600/20 mix-blend-multiply filter blur-3xl opacity-70"></div>
 
       {/* Main Glass Container */}
       <main className="relative z-10 w-full max-w-md glass-panel rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <header className="flex items-center justify-center p-6 border-b border-white/5 bg-white/5">
-          <h1 className="text-white text-xl font-bold tracking-wide">
+          <h1 className="text-xl font-bold tracking-wide text-white">
             My Todo List
           </h1>
         </header>
 
         {/* Input Area */}
-        <div className="p-6 pb-2">
-          <div className="flex flex-col gap-3">
-            <label className="relative block w-full">
-              <span className="sr-only">Add a new task</span>
-              <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-white/40 pointer-events-none">
-                <span className="material-symbols-outlined">add_task</span>
-              </div>
-              <input
-                className="glass-input w-full rounded-2xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 h-14 pl-12 pr-4 text-base font-normal leading-normal transition-all shadow-lg shadow-black/5"
-                placeholder="What needs to be done?"
-                type="text"
-              />
-            </label>
-            <button
-              onClick={handleShowAlert}
-              className="w-full h-12 rounded-xl bg-primary hover:bg-blue-600 text-white font-semibold text-sm tracking-wide shadow-[0_0_15px_rgba(43,108,238,0.4)] transition-all hover:shadow-[0_0_20px_rgba(43,108,238,0.6)] active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <span>Add Task</span>
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "18px" }}
+        <form
+          action=""
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAddTask();
+          }}
+        >
+          <div className="p-6 pb-2">
+            <div className="flex flex-col gap-3">
+              <label className="relative block w-full">
+                <span className="sr-only">Add a new task</span>
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-white/40">
+                  <span className="material-symbols-outlined">add_task</span>
+                </div>
+                <input
+                  className="w-full pl-12 pr-4 text-base font-normal leading-normal text-white transition-all shadow-lg glass-input rounded-2xl placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 h-14 shadow-black/5"
+                  placeholder="What needs to be done?"
+                  type="text"
+                  value={newTask}
+                  onChange={(e) => {
+                    const userTyped = e.target.value;
+                    setNewTask(userTyped);
+                  }}
+                />
+              </label>
+              <button
+                type="submit"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-blue-600 text-white font-semibold text-sm tracking-wide shadow-[0_0_15px_rgba(43,108,238,0.4)] transition-all hover:shadow-[0_0_20px_rgba(43,108,238,0.6)] active:scale-[0.98] flex items-center justify-center gap-2"
               >
-                arrow_forward
-              </span>
-            </button>
+                <span>Add Task</span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "18px" }}
+                >
+                  arrow_forward
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
 
         {/* Todo List */}
-        <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
+        <div className="flex-1 px-4 pb-6 space-y-2 overflow-y-auto">
           {taskArray.map((task) => {
             return (
               <div
-                className="group flex items-center gap-4 glass-item p-4 rounded-xl transition-all hover:bg-white/10 hover:shadow-md cursor-pointer"
+                className="flex items-center gap-4 p-4 transition-all cursor-pointer group glass-item rounded-xl hover:bg-white/10 hover:shadow-md"
                 key={task.task_id}
               >
                 <input
-                  className="h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-white/20 bg-transparent"
+                  className="w-6 h-6 bg-transparent border-2 rounded-lg appearance-none cursor-pointer border-white/20"
                   type="checkbox"
                 />
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-base font-medium leading-normal">
+                  <p className="text-base font-medium leading-normal text-white">
                     {task.task_name}
                   </p>
                   <p className="text-white/40 text-xs mt-0.5">
                     {task.task_time}
                   </p>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-red-400">
+                <div className="p-2 transition-opacity rounded-lg opacity-0 group-hover:opacity-100 hover:bg-white/10 text-white/60 hover:text-red-400">
                   <span className="material-symbols-outlined text-[20px]">
                     delete+
                   </span>
