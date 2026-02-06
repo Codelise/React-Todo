@@ -19,7 +19,9 @@ export default function Todo() {
     localStorage.setItem("task", JSON.stringify(taskArray));
   }, [taskArray]);
 
+  // Add task
   function handleAddTask() {
+    if (!newTask) return;
     const taskObject = {
       task_id: "-" + Math.random().toString(36).substring(2, 9),
       task_name: newTask,
@@ -29,6 +31,27 @@ export default function Todo() {
     setTaskArray([...taskArray, taskObject]); // creates a new object that includes the input value
     console.log([...taskArray, taskObject]);
     setNewTask(""); // clears the input field
+  }
+
+  // Delete Task
+  function handleDeleteTask(id) {
+    const confirmDelete = confirm("Are you sure you want to delete this task?");
+    if (!confirmDelete) return;
+    const deleteTask = taskArray.filter((task) => task.task_id !== id);
+    setTaskArray(deleteTask);
+  }
+
+  // Check task
+  function handleToggleTask(id) {
+    const updated = taskArray.map((task) => {
+      if (task.task_id === id) {
+        return { ...task, task_completed: !task.task_completed };
+      } else {
+        return task;
+      }
+    });
+
+    setTaskArray(updated);
   }
 
   return (
@@ -75,45 +98,65 @@ export default function Todo() {
               </label>
               <button
                 type="submit"
-                className="w-full h-12 rounded-xl bg-primary hover:bg-blue-600 text-white font-semibold text-sm tracking-wide shadow-[0_0_15px_rgba(43,108,238,0.4)] transition-all hover:shadow-[0_0_20px_rgba(43,108,238,0.6)] active:scale-[0.98] flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-blue-600 text-white font-semibold text-sm tracking-wide shadow-[0_0_15px_rgba(43,108,238,0.4)] transition-all hover:shadow-[0_0_20px_rgba(43,108,238,0.6)] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Add Task</span>
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: "18px" }}
-                >
-                  arrow_forward
-                </span>
               </button>
             </div>
           </div>
         </form>
 
         {/* Todo List */}
-        <div className="flex-1 px-4 pb-6 space-y-2 overflow-y-auto">
+        <div className="flex-1 px-4 pb-6 mt-5 space-y-2 overflow-y-auto">
           {taskArray.map((task) => {
             return (
               <div
-                className="flex items-center gap-4 p-4 transition-all cursor-pointer group glass-item rounded-xl hover:bg-white/10 hover:shadow-md"
+                className={
+                  task.task_completed
+                    ? "opacity-60 flex items-center gap-4 p-4 transition-all cursor-pointer group glass-item rounded-xl hover:bg-white/10 hover:shadow-md"
+                    : "flex items-center gap-4 p-4 transition-all cursor-pointer group glass-item rounded-xl hover:bg-white/10 hover:shadow-md"
+                }
                 key={task.task_id}
               >
                 <input
-                  className="w-6 h-6 bg-transparent border-2 rounded-lg appearance-none cursor-pointer border-white/20"
+                  className="w-6 h-6 bg-transparent border-2 rounded-lg cursor-pointer border-white/20"
                   type="checkbox"
+                  onChange={() => {
+                    handleToggleTask(task.task_id);
+                  }}
+                  checked={task.task_completed}
                 />
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-medium leading-normal text-white">
+                  <p
+                    className={
+                      task.task_completed
+                        ? "text-white line-through"
+                        : "text-base font-medium leading-normal text-white"
+                    }
+                  >
                     {task.task_name}
                   </p>
                   <p className="text-white/40 text-xs mt-0.5">
                     {task.task_time}
                   </p>
                 </div>
-                <div className="p-2 transition-opacity rounded-lg opacity-0 group-hover:opacity-100 hover:bg-white/10 text-white/60 hover:text-red-400">
-                  <span className="material-symbols-outlined text-[20px]">
-                    delete+
-                  </span>
+                <div className="">
+                  <button className="pr-3 transition-opacity rounded-lg opacity-100 cursor-pointer hover:bg-white/10 text-white/60">
+                    <span className="material-symbols-outlined text-[20px]">
+                      edit
+                    </span>
+                  </button>
+                  <button
+                    className="p-2 transition-opacity rounded-lg opacity-100 cursor-pointer hover:bg-white/10 text-white/60 hover:text-red-400"
+                    onClick={() => {
+                      handleDeleteTask(task.task_id);
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      delete
+                    </span>
+                  </button>
                 </div>
               </div>
             );
