@@ -13,6 +13,8 @@ export default function Todo() {
 
   // this is for the input task only
   const [newTask, setNewTask] = useState("");
+  // for editing task
+  const [editTask, setEditTask] = useState(null);
 
   // saves task to localStorage
   useEffect(() => {
@@ -21,16 +23,34 @@ export default function Todo() {
 
   // Add task
   function handleAddTask() {
-    if (!newTask) return;
-    const taskObject = {
-      task_id: "-" + Math.random().toString(36).substring(2, 9),
-      task_name: newTask,
-      task_time: Date.now().toLocaleString(),
-      task_completed: false,
-    };
-    setTaskArray([...taskArray, taskObject]); // creates a new object that includes the input value
-    console.log([...taskArray, taskObject]);
+    if (!newTask) {
+      alert("Please add a task");
+      return;
+    }
+
+    // editTask === null means I'm not editing
+    if (editTask === null) {
+      const taskObject = {
+        task_id: "-" + Math.random().toString(36).substring(2, 9),
+        task_name: newTask,
+        task_time: Date.now().toLocaleString(),
+        task_completed: false,
+      };
+      setTaskArray([...taskArray, taskObject]); // creates a new object that includes the input value
+    }
+    // else I'm editing a task
+    else {
+      const updatedTask = taskArray.map((task) => {
+        if (task.task_id === editTask) {
+          return { ...task, task_name: newTask };
+        } else {
+          return task;
+        }
+      });
+      setTaskArray(updatedTask);
+    }
     setNewTask(""); // clears the input field
+    setEditTask(null);
   }
 
   // Delete Task
@@ -52,6 +72,15 @@ export default function Todo() {
     });
 
     setTaskArray(updated);
+  }
+
+  // Edit task
+  function handleEditTask(id) {
+    setEditTask(id);
+    const findTask = taskArray.find((task) => task.task_id === id);
+    if (findTask) {
+      setNewTask(findTask.task_name || "");
+    }
   }
 
   return (
@@ -111,12 +140,12 @@ export default function Todo() {
           {taskArray.map((task) => {
             return (
               <div
+                key={task.task_id}
                 className={
                   task.task_completed
                     ? "opacity-60 flex items-center gap-4 p-4 transition-all cursor-pointer group glass-item rounded-xl hover:bg-white/10 hover:shadow-md"
                     : "flex items-center gap-4 p-4 transition-all cursor-pointer group glass-item rounded-xl hover:bg-white/10 hover:shadow-md"
                 }
-                key={task.task_id}
               >
                 <input
                   className="w-6 h-6 bg-transparent border-2 rounded-lg cursor-pointer border-white/20"
@@ -142,7 +171,12 @@ export default function Todo() {
                   </p>
                 </div>
                 <div className="">
-                  <button className="pr-3 transition-opacity rounded-lg opacity-100 cursor-pointer hover:bg-white/10 text-white/60">
+                  <button
+                    className="pr-3 transition-opacity rounded-lg opacity-100 cursor-pointer hover:bg-white/10 text-white/60"
+                    onClick={() => {
+                      handleEditTask(task.task_id);
+                    }}
+                  >
                     <span className="material-symbols-outlined text-[20px]">
                       edit
                     </span>
