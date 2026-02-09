@@ -33,7 +33,7 @@ export default function Todo() {
       const taskObject = {
         task_id: "-" + Math.random().toString(36).substring(2, 9),
         task_name: newTask,
-        task_time: Date.now().toLocaleString(),
+        task_time: new Date().toLocaleString(),
         task_completed: false,
       };
       setTaskArray([...taskArray, taskObject]); // creates a new object that includes the input value
@@ -79,6 +79,7 @@ export default function Todo() {
     setEditTask(id);
     const findTask = taskArray.find((task) => task.task_id === id);
     if (findTask) {
+      // sets the new edited task name or empy string
       setNewTask(findTask.task_name || "");
     }
   }
